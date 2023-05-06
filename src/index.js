@@ -4,6 +4,9 @@ const fs = require('fs')
 function main() {
     const numThreads = 4;
     const threads = [];
+    const startAt = Date.now()
+    let processed = 0
+    let foundTotal = 0
 
     for (let i = 0; i < numThreads; i++) {
 
@@ -22,7 +25,12 @@ function main() {
             const { type, message } = msg
             if (type === 'log') {
                 console.log(message)
+            } else if (type === 'processed') {
+                const msRun = Date.now() - startAt
+                processed += message.processed
+                console.log(new Date(), `=== running: ${((msRun) / 1000).toFixed()}s. processed ${processed} keys, found ${foundTotal} total addresses ===`)
             } else if (type === 'data') {
+                foundTotal++
                 fs.appendFileSync(__dirname + '/beauty_addresses.json', JSON.stringify(message) + '\n')
             } else {
                 console.error('upsupported msg', msg)

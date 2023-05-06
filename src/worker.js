@@ -41,14 +41,11 @@ function scoreAddress(address, numberChars) {
 }
 
 function findAddresses(numberChars, limit) {
-    const startAt = Date.now()
-    const logEvery = 1000
+    const logEvery = 10000
     let foundAddresses = 0
     for (let i = 0; i < limit; i++) {
         if (i % logEvery === 0) {
-            const msRun = Date.now() - startAt
-            parentPort.postMessage({type: 'log', message: `=== threadId: ${threadId}, running: ${((msRun) / 1000).toFixed()}s. processed ${i} of ${limit} keys, found ${foundAddresses} total addresses ===` })
-
+            parentPort.postMessage({type: 'processed', message: {processed: i}})
         }
         const privateKey = ethers.hexlify(ethers.randomBytes(32));
         const address = ethers.computeAddress(privateKey).toLowerCase();
