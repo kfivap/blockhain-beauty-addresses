@@ -59,7 +59,7 @@ func scoreAddress(address string, numberChars int) int {
 		} else if lastCharsSame {
 			score += 10
 		} else {
-			score += 1 // uncomment if need chars in the middle
+			// score += 1 // uncomment if need chars in the middle
 		}
 	}
 	return score
@@ -126,8 +126,8 @@ func generateAddresses(numberChars int, out chan<- Address) {
 }
 
 func main() {
-	numberChars := 7
-	numWorkers := 5
+	numberChars := 4
+	numWorkers := 4
 	out := make(chan Address, 1000)
 	for i := 0; i < numWorkers; i++ {
 		go generateAddresses(numberChars, out)
