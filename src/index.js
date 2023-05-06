@@ -9,8 +9,8 @@ function main() {
 
     const worker = new Worker(__dirname + "/worker.js", {
       workerData: {
-        numberChars: 3,
-        limit: 10000
+        numberChars: 5,
+        limit: 1000000
       },
     });
 

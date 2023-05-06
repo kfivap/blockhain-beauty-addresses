@@ -47,7 +47,7 @@ function findAddresses(numberChars, limit) {
     for (let i = 0; i < limit; i++) {
         if (i % logEvery === 0) {
             const msRun = Date.now() - startAt
-            parentPort.postMessage({type: 'log', message: `=== threadId: ${threadId}, running: ${((msRun) / 1000).toFixed()}s. processed ${i} keys, found ${foundAddresses} total addresses ===` })
+            parentPort.postMessage({type: 'log', message: `=== threadId: ${threadId}, running: ${((msRun) / 1000).toFixed()}s. processed ${i} of ${limit} keys, found ${foundAddresses} total addresses ===` })
 
         }
         const privateKey = ethers.hexlify(ethers.randomBytes(32));
