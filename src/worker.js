@@ -32,7 +32,7 @@ function scoreAddress(address, numberChars) {
         } else if (lastCharsSame) {
             score += 10
         } else {
-            // score += 1 // uncomment if need chars in the middle
+            score += 1 // uncomment if need chars in the middle
         }
 
     }
