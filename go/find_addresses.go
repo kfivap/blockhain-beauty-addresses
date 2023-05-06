@@ -1,13 +1,16 @@
 package main
 
 import (
+	"crypto/ecdsa"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type Address struct {
@@ -62,58 +65,68 @@ func scoreAddress(address string, numberChars int) int {
 	return score
 }
 
-func computeAddress(privateKey []byte) string {
-	hasher := sha256.New()
-	hasher.Write(privateKey)
-	hash := hasher.Sum(nil)
+// not works correct
+// privateKey := make([]byte, 32)
+// _, err := rand.Read(privateKey)
+// if err != nil {
+// 	panic(err)
+// }
+// address := computeAddress(privateKey)
+// address = strings.ToLower(address)
+// func computeAddress(privateKey []byte) string {
+// 	hasher := sha256.New()
+// 	hasher.Write(privateKey)
+// 	hash := hasher.Sum(nil)
 
-	// Compute the address from the public key by taking the last 20 bytes
-	// of the keccak256 hash of the public key.
-	hasher = sha256.New()
-	hasher.Write(hash)
-	publicKeyHash := hasher.Sum(nil)
+// 	// Compute the address from the public key by taking the last 20 bytes
+// 	// of the keccak256 hash of the public key.
+// 	hasher = sha256.New()
+// 	hasher.Write(hash)
+// 	publicKeyHash := hasher.Sum(nil)
 
-	hasher = sha256.New()
-	hasher.Write(publicKeyHash)
-	publicKeyHash = hasher.Sum(nil)
+// 	hasher = sha256.New()
+// 	hasher.Write(publicKeyHash)
+// 	publicKeyHash = hasher.Sum(nil)
 
-	keccakHasher := sha256.New()
-	keccakHasher.Write(publicKeyHash)
-	hash = keccakHasher.Sum(nil)
+// 	keccakHasher := sha256.New()
+// 	keccakHasher.Write(publicKeyHash)
+// 	hash = keccakHasher.Sum(nil)
 
-	address := hex.EncodeToString(hash[len(hash)-20:])
+// 	address := hex.EncodeToString(hash[len(hash)-20:])
 
-	return address
-}
+// 	return address
+// }
 
 func generateAddresses(numberChars int, out chan<- Address) {
 	counter := 0
 	for {
-		privateKey := make([]byte, 32)
-		_, err := rand.Read(privateKey)
+		privateKey, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 		if err != nil {
-			panic(err)
+			fmt.Println("Error generating private key:", err)
+			return
 		}
-		address := computeAddress(privateKey)
-		address = strings.ToLower(address)
+		// Get the corresponding address
+		addressBytes := crypto.PubkeyToAddress(privateKey.PublicKey)
+		address := hexutil.Encode(addressBytes[:])
 		score := scoreAddress(address, numberChars)
 		if score != 0 {
+			privateKeyHex := "0x" + hex.EncodeToString(privateKey.D.Bytes())
 			out <- Address{
 				Score:      score,
 				Address:    address,
-				PrivateKey: hex.EncodeToString(privateKey),
+				PrivateKey: privateKeyHex,
 			}
 		}
 
 		counter++
-		if counter%10000000 == 0 {
+		if counter%100000 == 0 {
 			fmt.Printf("Processed %d keys\n", counter)
 		}
 	}
 }
 
 func main() {
-	numberChars := 8
+	numberChars := 7
 	numWorkers := 5
 	out := make(chan Address, 1000)
 	for i := 0; i < numWorkers; i++ {
